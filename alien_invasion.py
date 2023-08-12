@@ -78,6 +78,9 @@ class AlienInvasion:
         # 隐藏光标
         pygame.mouse.set_visible(False)
 
+        # 还原游戏设置
+        self.settings.initialize_dynamic_settings()
+
     def _check_events(self):
         """响应按键和鼠标事件"""
         for event in pygame.event.get():
@@ -202,6 +205,7 @@ class AlienInvasion:
             # 删除现有子弹并创建一个新的外星舰队
             self.bullets.empty()
             self._create_fleet()
+            self.settings.increase_speed()
 
     def _check_aliens_bottom(self):
         """检查是否有外星人到达了屏幕的下边缘"""
