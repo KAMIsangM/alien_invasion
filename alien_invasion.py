@@ -69,9 +69,7 @@ class AlienInvasion:
         """开始游戏"""
         # 重置游戏的统计信息
         self.stats.reset_stats()
-        self.sb.prep_score()
-        self.sb.prep_level()
-        self.sb.prep_ships()
+        self.sb.prep_images()
         self.game_active = True
 
         # 清空外星人列表和子弹列表
@@ -142,7 +140,11 @@ class AlienInvasion:
         alien_width, alien_height = alien.rect.size
 
         current_x, current_y = alien_width, alien_height
-        while current_y < (self.settings.screen_height - 3 * alien_height):
+        if self.settings.full_screen:
+            blank = int(4 * alien_height)
+        else:
+            blank = int(3 * alien_height)
+        while current_y < (self.settings.screen_height - blank):
             while current_x < (self.settings.screen_width - 2 * alien_width):
                 self._create_alien(current_x, current_y)
                 current_x += 2 * alien_width
@@ -221,7 +223,10 @@ class AlienInvasion:
                 self.stats.score += self.settings.alien_points * len(aliens)
             self.sb.prep_score()
             self.sb.check_high_score()
-        
+        self._start_new_level()
+
+    def _start_new_level(self):
+        """开始新等级"""
         if not self.aliens:
             # 删除现有子弹并创建一个新的外星舰队
             self.bullets.empty()

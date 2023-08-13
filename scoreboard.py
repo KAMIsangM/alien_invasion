@@ -18,7 +18,10 @@ class Scoreboard:
         self.text_color = (30, 30, 30)
         self.font = pygame.font.SysFont(None, 48)
 
-        # 准备包含最高分和当前得分的图像
+        self.prep_images()
+
+    def prep_images(self):
+        """准备包含最高分和当前得分的图像"""
         self.prep_score()
         self.prep_high_score()
         self.prep_level()
