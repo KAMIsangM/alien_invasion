@@ -9,6 +9,7 @@ from settings import Settings
 from game_stats import GameStats
 from scoreboard import Scoreboard
 from button import Button
+import sound_effects as se
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
@@ -21,6 +22,7 @@ class AlienInvasion:
         pygame.init()
         self.clock = pygame.time.Clock()
         self.settings = Settings()
+        self.sound = se.Sound()
 
         self.set_screen(self.settings.full_screen)
         pygame.display.set_caption("Alien Invasion")
@@ -46,6 +48,9 @@ class AlienInvasion:
         self.normal_button = Button(self, 'Normal')
         self.hard_button = Button(self, 'Hard')
         self.make_difficulty_button()
+
+        # 播放背景音乐
+        self.sound.play_BGM()
 
     def set_screen(self, switch):
         """屏幕设置"""
@@ -108,6 +113,9 @@ class AlienInvasion:
         # 还原游戏设置
         self.settings.initialize_dynamic_settings()
 
+        # 开始音效
+        self.sound.start.play()
+
     def _quit_game(self):
         """结束游戏"""
         path = Path(f'highest_score_{self.settings.difficulty_level}.json')
@@ -140,6 +148,7 @@ class AlienInvasion:
         easy_clicked = self.easy_button.rect.collidepoint(mouse_pos)
         normal_clicked = self.normal_button.rect.collidepoint(mouse_pos)
         hard_clicked = self.hard_button.rect.collidepoint(mouse_pos)
+        self.sound.switch.play()
         if easy_clicked:
             self.settings.difficulty_level = 'easy'
             self.easy_button._prep_highlight()
@@ -238,7 +247,8 @@ class AlienInvasion:
             self.ship.center_ship()
 
             # 暂停
-            sleep(0.5)
+            self.sound.hit.play()
+            sleep(1)
         else:
             self.game_active =False
             pygame.mouse.set_visible(True)
@@ -253,6 +263,7 @@ class AlienInvasion:
         if len(self.bullets) < self.settings.bullet_allowed:
             new_bullet = Bullet(self)
             self.bullets.add(new_bullet)
+            self.sound.laser.play()
 
     def _update_bullets(self):
         """更新子弹的位置并删除已消失的子弹"""
@@ -274,6 +285,7 @@ class AlienInvasion:
         if collisions:
             for aliens in collisions.values():
                 self.stats.score += self.settings.alien_points * len(aliens)
+                self.sound.explosion.play()
             self.sb.prep_score()
             self.sb.check_high_score()
         self._start_new_level()
@@ -289,6 +301,7 @@ class AlienInvasion:
             # 提高等级
             self.stats.level += 1
             self.sb.prep_level()
+            self.sound.level.play()
 
     def _check_aliens_bottom(self):
         """检查是否有外星人到达了屏幕的下边缘"""
