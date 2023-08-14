@@ -31,13 +31,30 @@ class Settings:
         # 外星人分数的提高速度
         self.score_scale = 1.5
 
+        self.difficulty_level ='normal'
+
         self.initialize_dynamic_settings()
 
     def initialize_dynamic_settings(self):
-        """初始化随游戏进行而变化的设置"""
-        self.ship_speed = 1.5
-        self.bullet_speed = 2.5
-        self.alien_speed = 1.0
+        """初始化随游戏进行而变化的难度设置"""
+        if self.difficulty_level == 'easy':
+            self.ship_limit = 4
+            self.bullets_allowed = 5
+            self.ship_speed = 0.75
+            self.bullet_speed = 1.5
+            self.alien_speed = 0.5
+        elif self.difficulty_level == 'normal':
+            self.ship_limit = 3
+            self.bullets_allowed = 3
+            self.ship_speed = 1.5
+            self.bullet_speed = 3.0
+            self.alien_speed = 1.0
+        elif self.difficulty_level == 'hard':
+            self.ship_limit = 2
+            self.bullets_allowed = 3
+            self.ship_speed = 3.0
+            self.bullet_speed = 6.0
+            self.alien_speed = 2.0
 
         # fleet_direction为1表示向右，为-1表示向左
         self.fleet_direction = 1

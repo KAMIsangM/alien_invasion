@@ -41,6 +41,12 @@ class AlienInvasion:
         # 创建Play按钮
         self.play_button = Button(self, "Play")
 
+        # 创建难度按钮
+        self.easy_button = Button(self, 'Easy')
+        self.normal_button = Button(self, 'Normal')
+        self.hard_button = Button(self, 'Hard')
+        self.make_difficulty_button()
+
     def set_screen(self, switch):
         """屏幕设置"""
         if switch:
@@ -50,7 +56,23 @@ class AlienInvasion:
         else:
             self.screen = pygame.display.set_mode(
                 (self.settings.screen_width, self.settings.screen_height))
+            
+    def make_difficulty_button(self):
+        """调整难度按钮"""
+        self.easy_button.rect.top = (
+            self.play_button.rect.top + 1.5 * self.play_button.rect.height)
+        self.easy_button._update_msg()
+        
+        self.normal_button.rect.top = (
+            self.easy_button.rect.top + 1.5 * self.easy_button.rect.height)
+        self.normal_button._update_msg()
 
+        self.hard_button.rect.top = (
+            self.normal_button.rect.top + 1.5 * self.normal_button.rect.height)
+        self.hard_button._update_msg()
+
+        # 调整初始难度为normal
+        self.normal_button._prep_highlight()
 
     def run_game(self):
         """开始游戏的主循环"""
@@ -86,9 +108,9 @@ class AlienInvasion:
         # 还原游戏设置
         self.settings.initialize_dynamic_settings()
 
-    def quit_game(self):
+    def _quit_game(self):
         """结束游戏"""
-        path = Path('highest_score.json')
+        path = Path(f'highest_score_{self.settings.difficulty_level}.json')
         contents = json.dumps(self.stats.high_score)
         path.write_text(contents)
         sys.exit()
@@ -97,7 +119,7 @@ class AlienInvasion:
         """响应按键和鼠标事件"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                self.quit_game()
+                self._quit_game()
             elif event.type == pygame.KEYDOWN:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
@@ -105,12 +127,38 @@ class AlienInvasion:
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_pos = pygame.mouse.get_pos()
                 self._check_play_button(mouse_pos)
+                self._check_difficulty_button(mouse_pos)
 
     def _check_play_button(self, mouse_pos):
         """在玩家单击Pla按钮时开始游戏"""
         button_clicked = self.play_button.rect.collidepoint(mouse_pos)
         if button_clicked and not self.game_active:
             self._start_game()
+
+    def _check_difficulty_button(self, mouse_pos):
+        """在玩家单击难度按钮时调整难度，并显示所选难度"""
+        easy_clicked = self.easy_button.rect.collidepoint(mouse_pos)
+        normal_clicked = self.normal_button.rect.collidepoint(mouse_pos)
+        hard_clicked = self.hard_button.rect.collidepoint(mouse_pos)
+        if easy_clicked:
+            self.settings.difficulty_level = 'easy'
+            self.easy_button._prep_highlight()
+            self.normal_button._prep_base()
+            self.hard_button._prep_base()
+        elif normal_clicked:
+            self.settings.difficulty_level = 'normal'
+            self.easy_button._prep_base()
+            self.normal_button._prep_highlight()
+            self.hard_button._prep_base()
+        elif hard_clicked:
+            self.settings.difficulty_level = 'hard'
+            self.easy_button._prep_base()
+            self.normal_button._prep_base()
+            self.hard_button._prep_highlight()
+
+        self.stats.reset_stats()
+        self.stats.remain_highest()
+        self.sb.prep_images()
 
     def _check_keydown_events(self, event):
         """响应按下"""
@@ -119,7 +167,7 @@ class AlienInvasion:
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = True
         elif event.key == pygame.K_q:
-            self.quit_game()
+            self._quit_game()
         elif event.key == pygame.K_p:
             self._start_game()
         elif event.key == pygame.K_SPACE:
@@ -195,6 +243,11 @@ class AlienInvasion:
             self.game_active =False
             pygame.mouse.set_visible(True)
 
+            # 记录最高分
+            path = Path(f'highest_score_{self.settings.difficulty_level}.json')
+            contents = json.dumps(self.stats.high_score)
+            path.write_text(contents)
+
     def _fire_bullet(self):
         """创建一颗子弹,并将其加入编组bullets"""
         if len(self.bullets) < self.settings.bullet_allowed:
@@ -254,7 +307,7 @@ class AlienInvasion:
         if pygame.sprite.spritecollideany(self.ship, self.aliens):
             self._ship_hit()
 
-        # 检查是否有外星人撞到飞船
+        # 检查是否有外星人到达下边缘
         self._check_aliens_bottom()
 
     def _update_screen(self):
@@ -271,6 +324,9 @@ class AlienInvasion:
         # 如果游戏处于非活动状态，就绘制Play按钮
         if not self.game_active:
             self.play_button.draw_button()
+            self.easy_button.draw_button()
+            self.normal_button.draw_button()
+            self.hard_button.draw_button()
 
         pygame.display.flip()
 

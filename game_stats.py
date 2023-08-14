@@ -10,7 +10,11 @@ class GameStats:
         self.reset_stats()
 
         # 在任何情况下都不应重置最高分
-        path = Path('highest_score.json')
+        self.remain_highest()
+
+    def remain_highest(self):
+        """记住不同难度的最高分"""
+        path = Path(f'highest_score_{self.settings.difficulty_level}.json')
         if path.exists():
             contents = path.read_text()
             self.high_score = json.loads(contents)

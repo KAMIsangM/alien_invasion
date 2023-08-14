@@ -26,6 +26,7 @@ class Scoreboard:
         self.prep_high_score()
         self.prep_level()
         self.prep_ships()
+        self.prep_difficulty()
 
     def prep_score(self):
         """将得分渲染为图像"""
@@ -44,6 +45,7 @@ class Scoreboard:
         self.screen.blit(self.score_image, self.score_rect)
         self.screen.blit(self.high_score_image, self.high_score_rect)
         self.screen.blit(self.level_image, self.level_rect)
+        self.screen.blit(self.difficulty_image, self.difficulty_rect)
         self.ships.draw(self.screen)
 
     def prep_high_score(self):
@@ -84,3 +86,15 @@ class Scoreboard:
             ship.rect.x = 10 + ship_number * ship.rect.width
             ship.rect.y = 10
             self.ships.add(ship)
+
+    def prep_difficulty(self):
+        """显示当前难度"""
+        difficulty = self.settings.difficulty_level
+        difficulty_str = f"Dif:{difficulty.title()}"
+        self.difficulty_image = self.font.render(difficulty_str, True,
+                self.text_color, self.settings.bg_color)
+        
+        # 将难度放在剩余飞船数下方
+        self.difficulty_rect = self.difficulty_image.get_rect()
+        self.difficulty_rect.left = 0
+        self.difficulty_rect.top =70
