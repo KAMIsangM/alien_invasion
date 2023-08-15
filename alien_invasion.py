@@ -34,8 +34,7 @@ class AlienInvasion:
         self.ship = Ship(self)
         self.bullets = pygame.sprite.Group()
         self.aliens = pygame.sprite.Group()
-
-        self._create_fleet()
+        self.buttons = pygame.sprite.Group()
 
         # 让游戏在一开始处于非活动状态
         self.game_active = False
@@ -47,6 +46,7 @@ class AlienInvasion:
         self.easy_button = Button(self, 'Easy')
         self.normal_button = Button(self, 'Normal')
         self.hard_button = Button(self, 'Hard')
+        self.buttons.add(self.easy_button, self.normal_button, self.hard_button)
         self.make_difficulty_button()
 
         # 播放背景音乐
@@ -55,12 +55,15 @@ class AlienInvasion:
     def set_screen(self, switch):
         """屏幕设置"""
         if switch:
-            self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+            flags = pygame.FULLSCREEN| pygame.HWSURFACE| pygame.DOUBLEBUF
+            self.screen = pygame.display.set_mode((0, 0), flags)
             self.settings.screen_width = self.screen.get_rect().width
             self.settings.screen_height = self.screen.get_rect().height
         else:
+            flags = pygame.DOUBLEBUF
             self.screen = pygame.display.set_mode(
-                (self.settings.screen_width, self.settings.screen_height))
+                (self.settings.screen_width, self.settings.screen_height),
+                flags)
             
     def make_difficulty_button(self):
         """调整难度按钮"""
@@ -81,7 +84,7 @@ class AlienInvasion:
 
     def run_game(self):
         """开始游戏的主循环"""
-        while True:
+        while 1:
             self._check_events()
 
             if self.game_active:
@@ -148,26 +151,28 @@ class AlienInvasion:
         easy_clicked = self.easy_button.rect.collidepoint(mouse_pos)
         normal_clicked = self.normal_button.rect.collidepoint(mouse_pos)
         hard_clicked = self.hard_button.rect.collidepoint(mouse_pos)
-        self.sound.switch.play()
         if easy_clicked:
             self.settings.difficulty_level = 'easy'
+            self._prep_button()
             self.easy_button._prep_highlight()
-            self.normal_button._prep_base()
-            self.hard_button._prep_base()
         elif normal_clicked:
             self.settings.difficulty_level = 'normal'
-            self.easy_button._prep_base()
+            self._prep_button()
             self.normal_button._prep_highlight()
-            self.hard_button._prep_base()
         elif hard_clicked:
             self.settings.difficulty_level = 'hard'
-            self.easy_button._prep_base()
-            self.normal_button._prep_base()
+            self._prep_button()
             self.hard_button._prep_highlight()
 
         self.stats.reset_stats()
         self.stats.remain_highest()
         self.sb.prep_images()
+
+    def _prep_button(self):
+        """改变按钮状态"""
+        for button in self.buttons.sprites():
+            button._prep_base()
+        self.sound.switch.play()
 
     def _check_keydown_events(self, event):
         """响应按下"""
@@ -196,18 +201,23 @@ class AlienInvasion:
         alien = Alien(self)
         alien_width, alien_height = alien.rect.size
 
-        current_x, current_y = alien_width, alien_height
         if self.settings.full_screen:
-            blank = int(4 * alien_height)
+            blank_x_0 = 3 * alien_width
+            current_x, current_y = blank_x_0, alien_height
+            blank_x = int(3 * alien_width)
+            blank_y = int(4 * alien_height)
         else:
-            blank = int(3 * alien_height)
-        while current_y < (self.settings.screen_height - blank):
-            while current_x < (self.settings.screen_width - 2 * alien_width):
+            blank_x_0 = alien_width
+            current_x, current_y = blank_x_0, alien_height
+            blank_x = int(2 * alien_width)
+            blank_y = int(3 * alien_height)
+        while current_y < (self.settings.screen_height - blank_y):
+            while current_x < (self.settings.screen_width - blank_x):
                 self._create_alien(current_x, current_y)
                 current_x += 2 * alien_width
 
             # 添加一行外星人后，重置x值并递增y值
-            current_x = alien_width
+            current_x = blank_x_0
             current_y += 2 * alien_height
 
     def _create_alien(self, x_position, y_position):
@@ -341,7 +351,7 @@ class AlienInvasion:
             self.normal_button.draw_button()
             self.hard_button.draw_button()
 
-        pygame.display.flip()
+        pygame.display.update()
 
 if __name__ == '__main__':
     # 创建游戏实例并运行游戏

@@ -1,10 +1,12 @@
 import pygame.font
+from pygame.sprite import Sprite
 
-class Button:
+class Button(Sprite):
     """为游戏创建按钮的类"""
 
     def __init__(self, ai_game, msg):
         """初始化按钮的属性"""
+        super().__init__()
         self.screen = ai_game.screen
         self.screen_rect = self.screen.get_rect()
         self.msg = msg
